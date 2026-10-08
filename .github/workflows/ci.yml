@@ -1,0 +1,49 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.13"]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ps
+          POSTGRES_PASSWORD: ps
+          POSTGRES_DB: ps_test
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 2s --health-retries 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e ".[dev,postgres]"
+      - name: Tests on SQLite
+        run: pytest -q
+      - name: Tests on PostgreSQL
+        run: pytest -q
+        env:
+          TEST_DATABASE_URL: postgresql://ps:ps@localhost:5432/ps_test
+      - name: Metric sanity check with simulated raters
+        run: python ../scripts/simulate_raters.py
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

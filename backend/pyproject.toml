@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prefstudio"
+version = "0.1.0"
+description = "A pairwise preference-labeling app for RLHF: rubric-based comparisons, inter-rater agreement and DPO export."
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Bereket Abebe" }]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "sqlalchemy>=2.0",
+    "evalforge @ https://github.com/Beki-hck/evalforge/archive/refs/heads/main.zip",
+]
+
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3.1"]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.scripts]
+prefstudio = "prefstudio.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["prefstudio*"]
+
+[tool.setuptools.package-data]
+prefstudio = ["data/*.jsonl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
