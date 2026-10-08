@@ -116,7 +116,7 @@ def rate_project(
                 score, ok = combine(d1, -d2)
                 report.inconsistent += not ok
                 rationale = (t1 if ok else "Verdict changed when the order changed; recorded as a tie.\n\n" + t1)[:2000]
-                swapped = False
+                swapped = None  # saw both orders, so no single side was "left"
             else:
                 first, second = (item.response_b, item.response_a) if swapped else (item.response_a, item.response_b)
                 d, rationale = ask(item.prompt, first, second)

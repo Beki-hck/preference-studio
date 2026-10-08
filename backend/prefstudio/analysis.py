@@ -42,7 +42,7 @@ class LabelRec:
     item_id: int
     rater: str
     score: int
-    shown_swapped: bool = False
+    shown_swapped: bool | None = False
     seconds: float | None = None
 
 
@@ -141,6 +141,7 @@ def compute_stats(
                 agree += category(l.score) == maj
         gl = [l for l in rl if l.item_id in gold]
         decided = [l for l in rl if l.score != 0]
+        placed = [l for l in decided if l.shown_swapped is not None]
         secs = [l.seconds for l in rl if l.seconds is not None]
         rater_rows.append(
             RaterStats(
@@ -150,7 +151,7 @@ def compute_stats(
                 gold_accuracy=(sum(category(l.score) == gold[l.item_id] for l in gl) / len(gl)) if gl else None,
                 n_gold=len(gl),
                 # Left side is A unless the pair was shown swapped.
-                left_bias=(sum((l.score < 0) != l.shown_swapped for l in decided) / len(decided)) if decided else None,
+                left_bias=(sum((l.score < 0) != l.shown_swapped for l in placed) / len(placed)) if placed else None,
                 tie_rate=(len(rl) - len(decided)) / len(rl),
                 median_seconds=statistics.median(secs) if secs else None,
             )

@@ -82,6 +82,29 @@ Pairs are imported as JSONL, one object per line:
 
 ## Results
 
+### Two local models as raters
+
+I had two small local models label the 40 sample pairs with `prefstudio ai-rate` (Ollama on a Windows PC, temperature 0). Each pair was judged twice, once in each order:
+
+| Rater | Order consistency | Picks first-shown answer | Gold accuracy (10 pairs) | Tie rate |
+|---|---|---|---|---|
+| llama3.2:3b | 55% | 72% | 70% | 45% |
+| qwen2.5:3b | 92% | 54% | 90% | 55% |
+
+- **llama3.2:3b has a strong position bias.** Its verdict flipped in 18 of 40 pairs when the two answers swapped places, and it preferred whichever answer came first 72% of the time. qwen2.5:3b flipped in only 3 pairs and was close to the unbiased 50%.
+- **The two models barely agree with each other:** Cohen's κ = 0.21 ("fair") on the 30 non-gold pairs, Krippendorff's α = 0.19.
+- Order-flipped verdicts are recorded as ties, which is why tie rates are high and why a biased judge loses gold accuracy.
+
+The takeaway: a small model shouldn't be trusted as a preference judge without checking position consistency first, and even a consistent one needs human labels to compare against.
+
+Reproduce it with:
+
+```bash
+prefstudio seed
+prefstudio ai-rate 1 -m ollama:llama3.2:3b -m ollama:qwen2.5:3b -o results/ai.json
+prefstudio stats 1
+```
+
 ### Metric validation with simulated raters
 
 To check that the agreement metrics behave correctly, [`scripts/simulate_raters.py`](scripts/simulate_raters.py) gives 400 pairs a hidden true score and simulates three raters who report it with a given probability ("skill") and guess randomly otherwise. Agreement should fall to about zero as skill falls to zero, and it does:
@@ -120,7 +143,7 @@ Labels are stored in a canonical form: score −2 (A much better) to +2 (B much 
 ## Tests
 
 ```bash
-cd backend && pytest                    # 39 tests
+cd backend && pytest                    # 40 tests
 TEST_DATABASE_URL=postgresql://... pytest   # same suite on PostgreSQL
 cd frontend && npm test
 ```

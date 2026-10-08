@@ -82,7 +82,7 @@ def add_label(
     score: int,
     criteria: dict[str, str],
     rationale: str = "",
-    shown_swapped: bool = False,
+    shown_swapped: bool | None = False,
     seconds: float | None = None,
 ) -> Label:
     label = Label(

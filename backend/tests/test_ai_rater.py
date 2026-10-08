@@ -73,3 +73,10 @@ def test_model_error_stops_cleanly(session):
 
     rep = rate_project(session, p, FunctionModel(boom, label="fake:down"), log=lambda *_: None)
     assert rep.rated == 0 and "ollama is not running" in rep.errors[0]
+
+
+def test_both_order_labels_have_no_left_bias(session):
+    p = _project(session)
+    judge = FunctionModel(lambda pr: "RATING: 1" if "GOOD" in _first_section(pr) else "RATING: 5", label="fake:fair2")
+    rate_project(session, p, judge, log=lambda *_: None)
+    assert service.project_stats(session, p).raters[0].left_bias is None

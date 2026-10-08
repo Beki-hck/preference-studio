@@ -76,7 +76,8 @@ class Label(Base):
     score: Mapped[int] = mapped_column(Integer)
     criteria: Mapped[dict] = mapped_column(JSON, default=dict)  # rubric key -> "A" | "B" | "tie"
     rationale: Mapped[str] = mapped_column(Text, default="")
-    shown_swapped: Mapped[bool] = mapped_column(Boolean, default=False)
+    # None when the rater saw both orders (AI raters with order="both").
+    shown_swapped: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     seconds: Mapped[float | None] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
